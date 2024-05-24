@@ -63,8 +63,8 @@ pipeline {
                     script {
                         // Use Kubernetes CLI to apply deployment and service manifests
                         withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
-                            sh 'kubectl apply -f k8s/deployment.yaml'
-                            sh 'kubectl apply -f k8s/service.yaml'
+                            sh 'kubectl apply -f k8s/deployment.yaml -n default'
+                            sh 'kubectl apply -f k8s/service.yaml -n default'
                         }
                     }
                 }

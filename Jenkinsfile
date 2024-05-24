@@ -1,31 +1,5 @@
 pipeline {
-    agent {
-        kubernetes {
-            yaml """
-            apiVersion: v1
-            kind: Pod
-            spec:
-              containers:
-              - name: docker
-                image: docker:19.03.12
-                command:
-                - cat
-                tty: true
-                volumeMounts:
-                - name: docker-sock
-                  mountPath: /var/run/docker.sock
-              - name: kubectl
-                image: bitnami/kubectl:latest
-                command:
-                - cat
-                tty: true
-              volumes:
-              - name: docker-sock
-                hostPath:
-                  path: /var/run/docker.sock
-            """
-        }
-    }
+    agent any
 
     environment {
         DOCKER_IMAGE = "sserdaracikyildiz/registry-1:pythonapp"
@@ -43,6 +17,7 @@ pipeline {
         stage('Build') {
             steps {
                 container('docker') {
+                    // Run steps inside Docker container
                     script {
                         // Build the Docker image
                         def app = docker.build("${DOCKER_IMAGE}:${env.BUILD_ID}")
@@ -54,6 +29,7 @@ pipeline {
         stage('Test') {
             steps {
                 container('docker') {
+                    // Run steps inside Docker container
                     script {
                         // Run tests
                         docker.image("${DOCKER_IMAGE}:${env.BUILD_ID}").inside {
@@ -67,6 +43,7 @@ pipeline {
         stage('Push to Registry') {
             steps {
                 container('docker') {
+                    // Run steps inside Docker container
                     script {
                         // Push the Docker image to a Docker registry
                         docker.withRegistry('https://index.docker.io/v1/', 'dockerhub-credentials') {
@@ -82,7 +59,9 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 container('kubectl') {
+                    // Run steps inside Docker container
                     script {
+                        // Use Kubernetes CLI to apply deployment and service manifests
                         withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
                             sh 'kubectl apply -f k8s/deployment.yaml'
                             sh 'kubectl apply -f k8s/service.yaml'

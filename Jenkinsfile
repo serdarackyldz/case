@@ -1,5 +1,8 @@
 pipeline {
-    agent any
+    agent {
+        kubernetes {
+            cloud 'default'
+        }
 
     environment {
         DOCKER_IMAGE = "sserdaracikyildiz/registry-1:pythonapp"

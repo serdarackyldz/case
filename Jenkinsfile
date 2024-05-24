@@ -2,6 +2,21 @@ pipeline {
     agent {
         kubernetes {
             cloud 'default'
+            defaultContainer 'docker' // Set the default container name
+            yaml """
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    jenkins: pipeline
+spec:
+  containers:
+  - name: docker
+    image: docker:latest
+    command:
+    - cat
+    tty: true
+"""
         }
     }
     environment {

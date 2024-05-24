@@ -3,12 +3,11 @@ pipeline {
         kubernetes {
             cloud 'default'
         }
-
+    }
     environment {
         DOCKER_IMAGE = "sserdaracikyildiz/registry-1:pythonapp"
         KUBE_CONFIG = credentials('kubeconfig') // Jenkins credential ID for kubeconfig
     }
-
     stages {
         stage('Checkout') {
             steps {
@@ -16,7 +15,6 @@ pipeline {
                 checkout scm
             }
         }
-
         stage('Build') {
             steps {
                 container('docker') {
@@ -28,7 +26,6 @@ pipeline {
                 }
             }
         }
-
         stage('Test') {
             steps {
                 container('docker') {
@@ -42,7 +39,6 @@ pipeline {
                 }
             }
         }
-
         stage('Push to Registry') {
             steps {
                 container('docker') {
@@ -58,7 +54,6 @@ pipeline {
                 }
             }
         }
-
         stage('Deploy to Kubernetes') {
             steps {
                 container('kubectl') {
@@ -74,7 +69,6 @@ pipeline {
             }
         }
     }
-
     post {
         always {
             container('docker') {

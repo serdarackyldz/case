@@ -66,9 +66,10 @@ spec:
                     // Run steps inside Docker container
                     script {
                         // Push the Docker image to a Docker registry
-                        
-                        sh "echo \$DOCKER_PASSWORD | docker login -u sserdaracikyildiz --password-stdin"
-                        sh "docker push sserdaracikyildiz/registry-1:serdar"
+                        withCredentials([string(credentialsId: 'docker-password', variable: 'DOCKER_PASSWORD')]) {
+                            sh "echo \$DOCKER_PASSWORD | docker login -u sserdaracikyildiz --password-stdin"
+                            sh "docker push sserdaracikyildiz/registry-1:serdar"
+                        }
                     }
                 }
             }
@@ -80,10 +81,13 @@ spec:
                     script {
                         // Use Kubernetes CLI to apply deployment and service manifests
                         withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
-                            sh 'kubectl set image deployment/flask-app flask-app=sserdaracikyildiz/registry-1:serdar'
+                            sh "kubectl --kubeconfig=\$KUBECONFIG set image deployment/flask-app flask-app=sserdaracikyildiz/registry-1:serdar"
                         }
                     }
-                }    
+                }
+            }
+        }
+    }
     post {
         always {
             // Clean up resources if needed

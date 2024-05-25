@@ -1,3 +1,4 @@
+pipeline {
     agent {
         kubernetes {
             cloud 'default'
@@ -5,6 +6,10 @@
             yaml """
 apiVersion: v1
 kind: Pod
+spec:
+  containers:
+  - name: docker
+    image: sserdaracikyildiz/registry-1:baseimage
     tty: true
     volumeMounts:
     - name: docker-sock
@@ -38,10 +43,8 @@ kind: Pod
                     // Run steps inside Docker container
                     script {
                         // Build the Docker image
-                        def app = docker.build("${DOCKER_IMAGE}:${env.BUILD_ID}")
+                        docker.build("${DOCKER_IMAGE}:${env.BUILD_ID}")
                     }
-                script {
-                    docker.build("${DOCKER_IMAGE}:${env.BUILD_ID}")
                 }
             }
         }
@@ -54,9 +57,6 @@ kind: Pod
                         docker.image("${DOCKER_IMAGE}:${env.BUILD_ID}").inside {
                             sh 'curl flask-app.default:80'
                         }
-                script {
-                    docker.image("${DOCKER_IMAGE}:${env.BUILD_ID}").inside {
-                        sh 'curl flask-app.default:80'
                     }
                 }
             }
@@ -72,11 +72,6 @@ kind: Pod
                             app.push("${env.BUILD_ID}")
                             app.push("latest")
                         }
-                script {
-                    docker.withRegistry('https://index.docker.io/v1/', 'dockerhub-credentials') {
-                        def app = docker.image("${DOCKER_IMAGE}:${env.BUILD_ID}")
-                        app.push("${env.BUILD_ID}")
-                        app.push("latest")
                     }
                 }
             }
@@ -91,10 +86,6 @@ kind: Pod
                             sh 'kubectl apply -f k8s/deployment.yaml -n default'
                             sh 'kubectl apply -f k8s/service.yaml -n default'
                         }
-                script {
-                    withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
-                        sh 'kubectl apply -f k8s/deployment.yaml -n default'
-                        sh 'kubectl apply -f k8s/service.yaml -n default'
                     }
                 }
             }
@@ -110,3 +101,9 @@ kind: Pod
         }
         success {
             echo 'Pipeline completed successfully.'
+        }
+        failure {
+            echo 'Pipeline failed.'
+        }
+    }
+}

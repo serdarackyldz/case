@@ -40,23 +40,10 @@ spec:
                 checkout scm
             }
         }
-        stage('Test') {
+        stage('Build') {
             steps {
                 script {
-                    docker.image("${DOCKER_IMAGE}:${env.BUILD_ID}").inside {
-                        sh 'curl flask-app.default:80'
-                    }
-                }
-            }
-        }
-        stage('Push to Registry') {
-            steps {
-                script {
-                    docker.withRegistry('https://index.docker.io/v1/', 'dockerhub-credentials') {
-                        def app = docker.image("${DOCKER_IMAGE}:${env.BUILD_ID}")
-                        app.push("${env.BUILD_ID}")
-                        app.push("latest")
-                    }
+                    docker.build("${DOCKER_IMAGE}:${env.BUILD_ID}")
                 }
             }
         }
@@ -73,7 +60,7 @@ spec:
     }
     post {
         always {
-            sh 'docker system prune -f'
+            echo 'Serdar.'
         }
         success {
             echo 'Pipeline completed successfully.'

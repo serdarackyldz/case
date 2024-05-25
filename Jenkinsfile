@@ -40,7 +40,86 @@ spec:
                 checkout scm
             }
         }
-        // Add more stages as needed
+        stage('Build') {
+            steps {
+                container('docker') {
+                    // Run steps inside Docker container
+                    script {
+                        // Build the Docker image
+                        def app = docker.build("${DOCKER_IMAGE}:${env.BUILD_ID}")
+                    }
+                }
+                script {
+                    docker.build("${DOCKER_IMAGE}:${env.BUILD_ID}")
+                }
+            }
+        }
+        stage('Test') {
+            steps {
+                container('docker') {
+                    // Run steps inside Docker container
+                    script {
+                        // Run tests
+                        docker.image("${DOCKER_IMAGE}:${env.BUILD_ID}").inside {
+                            sh 'curl flask-app.default:80'
+                        }
+                    }
+                }
+                script {
+                    container('docker') {
+                        docker.image("${DOCKER_IMAGE}:${env.BUILD_ID}").inside {
+                            sh 'curl flask-app.default:80'
+                        }
+                    }
+                }
+            }
+        }
+        stage('Push to Registry') {
+            steps {
+                container('docker') {
+                    // Run steps inside Docker container
+                    script {
+                        // Push the Docker image to a Docker registry
+                        docker.withRegistry('https://index.docker.io/v1/', 'dockerhub-credentials') {
+                            def app = docker.image("${DOCKER_IMAGE}:${env.BUILD_ID}")
+                            app.push("${env.BUILD_ID}")
+                            app.push("latest")
+                        }
+                    }
+                }
+                script {
+                    container('docker') {
+                        docker.withRegistry('https://index.docker.io/v1/', 'dockerhub-credentials') {
+                            def app = docker.image("${DOCKER_IMAGE}:${env.BUILD_ID}")
+                            app.push("${env.BUILD_ID}")
+                            app.push("latest")
+                        }
+                    }
+                }
+            }
+        }
+        stage('Deploy to Kubernetes') {
+            steps {
+                container('kubectl') {
+                    // Run steps inside kubectl container
+                    script {
+                        // Use Kubernetes CLI to apply deployment and service manifests
+                        withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
+                            sh 'kubectl apply -f k8s/deployment.yaml -n default'
+                            sh 'kubectl apply -f k8s/service.yaml -n default'
+                        }
+                    }
+                }
+                script {
+                    container('kubectl') {
+                        withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
+                            sh 'kubectl apply -f k8s/deployment.yaml -n default'
+                            sh 'kubectl apply -f k8s/service.yaml -n default'
+                        }
+                    }
+                }
+            }
+        }
     }
     post {
         always {

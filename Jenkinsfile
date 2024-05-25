@@ -32,12 +32,7 @@ spec:
       path: /var/run/docker.sock
 """
         }
-    }
-    agent {
-        any {
-            cloud 'default'
-        }
-    }    
+    }  
     environment {
         DOCKER_IMAGE = "sserdaracikyildiz/registry-1:pythonapp"
         KUBE_CONFIG = credentials('kubeconfig') // Jenkins credential ID for kubeconfig
@@ -51,6 +46,7 @@ spec:
         }
         stage('Build') {
             agent any
+            cloud 'default'
             steps {
                 container('docker') {
                     // Run steps inside Docker container

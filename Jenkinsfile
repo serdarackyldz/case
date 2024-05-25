@@ -33,6 +33,11 @@ spec:
 """
         }
     }
+    agent {
+        any {
+            cloud 'default'
+        }
+    }    
     environment {
         DOCKER_IMAGE = "sserdaracikyildiz/registry-1:pythonapp"
         KUBE_CONFIG = credentials('kubeconfig') // Jenkins credential ID for kubeconfig

@@ -11,18 +11,18 @@ metadata:
     jenkins: pipeline
 spec:
   containers:
-  - name: kubectl
-    image: bitnami/kubectl:latest
-    command:
-    - cat
-    tty: true
   - name: docker
     image: docker:dind
     command:
     - cat
     tty: true
     securityContext:
-      privileged: true
+      privileged: true  
+  - name: kubectl
+    image: bitnami/kubectl:latest
+    command:
+    - cat
+    tty: true
     volumeMounts:
     - mountPath: /var/run/docker.sock
       name: docker-sock

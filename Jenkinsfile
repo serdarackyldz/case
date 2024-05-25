@@ -40,13 +40,6 @@ spec:
                 checkout scm
             }
         }
-        stage('Build') {
-            steps {
-                script {
-                    docker.build("${DOCKER_IMAGE}:${env.BUILD_ID}")
-                }
-            }
-        }
         stage('Test') {
             steps {
                 script {

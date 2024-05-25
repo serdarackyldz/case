@@ -46,7 +46,6 @@ spec:
         }
         stage('Build') {
             agent any
-            cloud 'default'
             steps {
                 container('docker') {
                     // Run steps inside Docker container

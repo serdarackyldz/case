@@ -12,7 +12,7 @@ metadata:
 spec:
   containers:
   - name: docker
-    image: sserdaracikyildiz/registry-1:baseimage
+    image: sserdaracikyildiz/registry-1:base
     tty: true
     volumeMounts:
     - name: docker-sock

@@ -45,7 +45,6 @@ spec:
             }
         }
         stage('Build') {
-            agent kubernetes
             steps {
                 container('docker') {
                     // Run steps inside Docker container

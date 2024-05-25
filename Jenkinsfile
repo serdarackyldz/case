@@ -17,10 +17,12 @@ spec:
     - cat
     tty: true
   - name: docker
-    image: docker:latest
+    image: docker:dind
     command:
     - cat
     tty: true
+    securityContext:
+      privileged: true
     volumeMounts:
     - mountPath: /var/run/docker.sock
       name: docker-sock
@@ -28,6 +30,7 @@ spec:
   - name: docker-sock
     hostPath:
       path: /var/run/docker.sock
+
 """
         }
     }

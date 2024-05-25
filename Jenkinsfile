@@ -43,6 +43,7 @@ spec:
         stage('Deploy to Kubernetes') {
             steps {
                 script {
+                    // Deploy to Kubernetes using kubectl
                     withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
                         sh 'kubectl apply -f k8s/deployment.yaml -n default'
                         sh 'kubectl apply -f k8s/service.yaml -n default'

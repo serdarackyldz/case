@@ -32,6 +32,31 @@ spec:
       path: /var/run/docker.sock
 """
         }
+any {
+            cloud 'default'
+            defaultContainer 'docker'
+            yaml """
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    jenkins: pipeline
+spec:
+  containers:
+  - name: docker
+    image: docker:dind
+    command:
+    - cat
+    tty: true
+    securityContext:
+      privileged: true  
+  - name: kubectl
+    image: bitnami/kubectl:latest
+    command:
+    - cat
+    tty: true
+"""
+        }        
     }  
     environment {
         DOCKER_IMAGE = "sserdaracikyildiz/registry-1:pythonapp"

@@ -35,6 +35,14 @@ spec:
         KUBE_CONFIG = credentials('kubeconfig') // Jenkins credential ID for kubeconfig
     }
     stages {
+        stage('Check PATH') {
+            steps {
+                script {
+                    // Execute a shell command to print the PATH variable
+                    sh 'echo "PATH: $PATH"'
+                }
+            }
+        }
         stage('Checkout') {
             steps {
                 checkout scm

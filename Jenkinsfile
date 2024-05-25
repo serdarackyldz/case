@@ -46,7 +46,7 @@ spec:
                     // Run steps inside Docker container
                     script {
                         // Build the Docker image
-                        def app = docker.build('${DOCKER_IMAGE}:${env.BUILD_ID}')
+                        def app = docker.build("${DOCKER_IMAGE}:${env.BUILD_ID}")
                     }
                 }
                 script {

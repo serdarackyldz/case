@@ -1,9 +1,9 @@
 pipeline {
     agent {
-        any {
+        kubernetes {
             cloud 'default'
             defaultContainer 'docker'
-            yaml """
+            yaml '''
 apiVersion: v1
 kind: Pod
 metadata:
@@ -23,9 +23,9 @@ spec:
     command:
     - cat
     tty: true
-"""
-        }  
-    }  
+'''
+        }
+    }
     environment {
         DOCKER_IMAGE = "sserdaracikyildiz/registry-1:pythonapp"
         KUBE_CONFIG = credentials('kubeconfig') // Jenkins credential ID for kubeconfig
@@ -55,9 +55,7 @@ spec:
                     // Run steps inside Docker container
                     script {
                         // Run tests
-                        //docker.image("${DOCKER_IMAGE}:${env.BUILD_ID}").inside {
-                            sh 'curl flask-app.default:80'
-                        }
+                        sh 'curl flask-app.default:80'
                     }
                 }
             }
@@ -68,9 +66,8 @@ spec:
                     // Run steps inside Docker container
                     script {
                         // Push the Docker image to a Docker registry
-                        sh "docker login -u sserdaracikyildiz -p Serdar96."
+                        sh "echo \$DOCKER_PASSWORD | docker login -u sserdaracikyildiz --password-stdin"
                         sh "docker push sserdaracikyildiz/registry-1:serdar"
-                        }
                     }
                 }
             }
@@ -82,7 +79,6 @@ spec:
                     script {
                         // Use Kubernetes CLI to apply deployment and service manifests
                         sh "kubectl set image deployment/flask-app flask-app=sserdaracikyildiz/registry-1:serdar"
-                        }
                     }
                 }
             }

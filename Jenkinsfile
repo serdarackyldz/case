@@ -2,7 +2,7 @@ pipeline {
     agent {
         kubernetes {
             cloud 'default'
-            defaultContainer 'docker' // Set the default container name
+            defaultContainer 'docker'
             yaml """
 apiVersion: v1
 kind: Pod
@@ -16,6 +16,18 @@ spec:
     command:
     - cat
     tty: true
+    volumeMounts:
+    - name: docker-sock
+      mountPath: /var/run/docker.sock
+  - name: kubectl
+    image: bitnami/kubectl:latest
+    command:
+    - cat
+    tty: true
+  volumes:
+  - name: docker-sock
+    hostPath:
+      path: /var/run/docker.sock
 """
         }
     }
@@ -72,7 +84,7 @@ spec:
         stage('Deploy to Kubernetes') {
             steps {
                 container('kubectl') {
-                    // Run steps inside Docker container
+                    // Run steps inside kubectl container
                     script {
                         // Use Kubernetes CLI to apply deployment and service manifests
                         withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {

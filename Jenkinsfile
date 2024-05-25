@@ -45,16 +45,15 @@ spec:
                 container('docker') {
                     // Run steps inside Docker container
                     script {
-                        // Initialize docker object
-                        def docker = container('docker').docker
-        
                         // Build the Docker image
                         def app = docker.build("${DOCKER_IMAGE}:${env.BUILD_ID}")
                     }
                 }
+                script {
+                    docker.build("${DOCKER_IMAGE}:${env.BUILD_ID}")
+                }
             }
         }
-
         stage('Test') {
             steps {
                 container('docker') {

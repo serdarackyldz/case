@@ -11,17 +11,19 @@ metadata:
     jenkins: pipeline
 spec:
   containers:
-  - name: docker
-    image: sserdaracikyildiz/registry-1:builder2
-    tty: true
-    volumeMounts:
-    - name: docker-sock
-      mountPath: /var/run/docker.sock
   - name: kubectl
     image: bitnami/kubectl:latest
     command:
     - cat
     tty: true
+  - name: docker
+    image: docker:latest
+    command:
+    - cat
+    tty: true
+    volumeMounts:
+    - mountPath: /var/run/docker.sock
+      name: docker-sock
   volumes:
   - name: docker-sock
     hostPath:

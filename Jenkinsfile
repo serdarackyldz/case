@@ -45,6 +45,7 @@ spec:
             }
         }
         stage('Build') {
+            agent any
             steps {
                 container('docker') {
                     // Run steps inside Docker container

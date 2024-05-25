@@ -3,7 +3,7 @@ pipeline {
         kubernetes {
             cloud 'default'
             defaultContainer 'docker'
-            yaml '''
+            yaml """
 apiVersion: v1
 kind: Pod
 metadata:
@@ -23,13 +23,12 @@ spec:
     command:
     - cat
     tty: true
-'''
-        }
-    }
+"""
+        }  
+    }  
     environment {
         DOCKER_IMAGE = "sserdaracikyildiz/registry-1:pythonapp"
         KUBE_CONFIG = credentials('kubeconfig') // Jenkins credential ID for kubeconfig
-        TAG = "latest"
     }
     stages {
         stage('Checkout') {
@@ -39,13 +38,17 @@ spec:
             }
         }
         stage('Build') {
+            agent any
             steps {
                 container('docker') {
                     // Run steps inside Docker container
                     script {
                         // Build the Docker image
-                        sh "docker build -t sserdaracikyildiz/registry-1:serdar ."
+                        def app = docker.build("sserdaracikyildiz/registry-1:${env.BUILD_ID}")
                     }
+                }
+                script {
+                    docker.build("${DOCKER_IMAGE}:${env.BUILD_ID}")
                 }
             }
         }
@@ -55,7 +58,16 @@ spec:
                     // Run steps inside Docker container
                     script {
                         // Run tests
-                        sh 'curl flask-app.default:80'
+                        docker.image("${DOCKER_IMAGE}:${env.BUILD_ID}").inside {
+                            sh 'curl flask-app.default:80'
+                        }
+                    }
+                }
+                script {
+                    container('docker') {
+                        docker.image("${DOCKER_IMAGE}:${env.BUILD_ID}").inside {
+                            sh 'curl flask-app.default:80'
+                        }
                     }
                 }
             }
@@ -66,9 +78,19 @@ spec:
                     // Run steps inside Docker container
                     script {
                         // Push the Docker image to a Docker registry
-                        withCredentials([string(credentialsId: 'docker-password', variable: 'DOCKER_PASSWORD')]) {
-                            sh "echo \$DOCKER_PASSWORD | docker login -u sserdaracikyildiz --password-stdin"
-                            sh "docker push sserdaracikyildiz/registry-1:serdar"
+                        docker.withRegistry('https://index.docker.io/v1/', 'dockerhub-credentials') {
+                            def app = docker.image("${DOCKER_IMAGE}:${env.BUILD_ID}")
+                            app.push("${env.BUILD_ID}")
+                            app.push("latest")
+                        }
+                    }
+                }
+                script {
+                    container('docker') {
+                        docker.withRegistry('https://index.docker.io/v1/', 'dockerhub-credentials') {
+                            def app = docker.image("${DOCKER_IMAGE}:${env.BUILD_ID}")
+                            app.push("${env.BUILD_ID}")
+                            app.push("latest")
                         }
                     }
                 }
@@ -81,7 +103,16 @@ spec:
                     script {
                         // Use Kubernetes CLI to apply deployment and service manifests
                         withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
-                            sh "kubectl --kubeconfig=\$KUBECONFIG set image deployment/flask-app flask-app=sserdaracikyildiz/registry-1:serdar"
+                            sh 'kubectl apply -f k8s/deployment.yaml -n default'
+                            sh 'kubectl apply -f k8s/service.yaml -n default'
+                        }
+                    }
+                }
+                script {
+                    container('kubectl') {
+                        withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
+                            sh 'kubectl apply -f k8s/deployment.yaml -n default'
+                            sh 'kubectl apply -f k8s/service.yaml -n default'
                         }
                     }
                 }

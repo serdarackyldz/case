@@ -30,6 +30,8 @@ Bu HELM pull edildi ve repo üzerinde mevcuttur.
 - Alertmanager grafana alerting üzerinde yönetilecek dashboard'lar oluşturuldu.
 - Oluşan bu alarmlar'a label olarak severity oluşturuldu burada en çok kullanılan 3 opsiyon oluşturuldu. (Critical-Error-Info)
 
+![Montioring Stack](https://github.com/serdarackyldz/case/blob/main/screenshots/Monitoring.png)
+
 **Prometheus-NodeExporter-Alertmanager:
 https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack
 
@@ -40,6 +42,8 @@ Monitoring Stack için kullanılan ansible playbook'u da repository'ye eklenmiş
 Basit bir web sayfası kodu python ile yazıldı.
 
 Bu kodun containerize olabilmesi için multistage Dockerfile hazırlandı. Dockerfile hazırlanırken resource utilization ve imaj boyutuna dikkat edildi.
+
+![Web Page](https://github.com/serdarackyldz/case/blob/main/screenshots/web.png)
 
  **CI/CD Altyapısının Kurulumu**
 

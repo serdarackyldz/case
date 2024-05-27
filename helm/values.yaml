@@ -1,0 +1,16 @@
+replicaCount: 1
+
+image:
+  repository: sserdaracikyildiz/registry-1
+  tag: pythonapp
+  pullPolicy: IfNotPresent
+
+service:
+  type: NodePort
+  port: 80
+  targetPort: 5000
+
+env:
+  FLASK_RUN_HOST: "0.0.0.0"
+
+resources: {}

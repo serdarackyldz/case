@@ -47,4 +47,4 @@ CI/CD ihtiyaçları için Jenkins deploymentı yapıldı. Jenkins için kullanı
 
 Jenkins üzerinde çalışması planlanan pipeline için Jenkinsfile hazırlandı.
 
-https://github.com/serdarackyldz/case/blob/main/screenshots/Jenkins.png
+![Jenkins](https://github.com/serdarackyldz/case/blob/main/screenshots/Jenkins.png)

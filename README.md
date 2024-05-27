@@ -45,6 +45,10 @@ Bu kodun containerize olabilmesi için multistage Dockerfile hazırlandı. Docke
 
 ![Web Page](https://github.com/serdarackyldz/case/blob/main/screenshots/web.png)
 
+Oluşturulan imaj DockerHub'a pushlandı.
+
+![DockerHub](https://github.com/serdarackyldz/case/blob/main/screenshots/registry.png)
+
  **CI/CD Altyapısının Kurulumu**
 
 CI/CD ihtiyaçları için Jenkins deploymentı yapıldı. Jenkins için kullanılan ansible playbook'u da repository'ye eklenmiştir.

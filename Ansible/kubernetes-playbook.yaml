@@ -1,0 +1,100 @@
+---
+- name: Install RKE2 Master Node
+  hosts: master
+  connection: local
+  become: yes
+
+  tasks:
+    - name: Install RKE2
+      shell: |
+        curl -sfL https://get.rke2.io | sh -
+      args:
+        executable: /bin/bash
+
+    - name: Enable rke2-server service
+      systemd:
+        name: rke2-server.service
+        enabled: yes
+
+    - name: Start rke2-server service
+      systemd:
+        name: rke2-server.service
+        state: started
+
+- name: Node Token Transfer 
+  hosts: master
+  connection: local
+  gather_facts: no
+
+  tasks:
+    - name: Read the content of the file
+      shell: cat /var/lib/rancher/rke2/server/node-token
+      register: node_token
+
+    - name: Set the token content
+      set_fact:
+        node_token_content: "{{ node_token.stdout }}"
+
+    - name: Ensure .kube directory exists
+      file:
+        path: /root/.kube
+        state: directory
+        mode: '0755'
+
+    - name: Copy kubeconfig file
+      copy:
+        src: /etc/rancher/rke2/rke2.yaml
+        dest: /root/.kube/config
+        remote_src: yes
+
+    - name: Download Helm
+      get_url:
+        url: https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+        dest: /root/get_helm.sh
+        mode: '0700'
+
+    - name: Run Helm installation script
+      shell: /root/get_helm.sh
+      
+    - name: Download kubectl
+      shell: |
+        curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+        sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+      args:
+        executable: /bin/bash
+
+- name: Install RKE2 Agent Node
+  hosts: worker
+  become: yes
+
+  tasks:
+    - name: Install RKE2 agent
+      shell: |
+        curl -sfL https://get.rke2.io | INSTALL_RKE2_TYPE="agent" sh -
+      args:
+        executable: /bin/bash
+
+    - name: Enable rke2-agent service
+      systemd:
+        name: rke2-agent.service
+        enabled: yes
+
+    - name: RKE create config directory
+      file:
+        path: /etc/rancher/rke2/
+        state: directory
+        mode: '0755'
+      ignore_errors: yes
+
+    - name: Node Register for RKE
+      copy:
+        dest: /etc/rancher/rke2/config.yaml
+        content: |
+          server: https://master:9345
+          token: "{{ hostvars['master']['node_token_content'] | default('') }}"
+        mode: '0644'
+
+    - name: Start rke2-agent service
+      systemd:
+        name: rke2-agent.service
+        state: started

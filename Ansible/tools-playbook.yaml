@@ -1,0 +1,62 @@
+---
+- name: Deploy Kubernetes resources
+  hosts: localhost
+  tasks:
+    - name: Ensure python3-openshift package is installed
+      ansible.builtin.yum:
+        name: python3-openshift
+        state: present
+      become: yes
+
+    - name: Ensure kubernetes.core collection is installed
+      ansible.builtin.command:
+        cmd: ansible-galaxy collection install kubernetes.core
+
+    - name: Ensure community.general collection is installed
+      ansible.builtin.command:
+        cmd: ansible-galaxy collection install community.general
+
+    - name: Create argocd namespace
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Namespace
+          metadata:
+            name: argocd
+
+    - name: Apply Argo CD manifest
+      ansible.builtin.command:
+        cmd: kubectl apply -f /root/argo-install.yaml -n argocd
+
+    - name: Deploy namespace
+      ansible.builtin.command:
+        cmd: kubectl apply -f /root/kubernetes-jenkins/namespace.yaml
+
+    - name: Deploy service account
+      ansible.builtin.command:
+        cmd: kubectl apply -f /root/kubernetes-jenkins/serviceAccount.yaml
+
+    - name: Deploy volume
+      ansible.builtin.command:
+        cmd: kubectl apply -f /root/kubernetes-jenkins/volume.yaml
+
+    - name: Deploy service
+      ansible.builtin.command:
+        cmd: kubectl apply -f /root/kubernetes-jenkins/service.yaml
+
+    - name: Deploy deployment
+      ansible.builtin.command:
+        cmd: kubectl apply -f /root/kubernetes-jenkins/deployment.yaml
+
+    - name: Add prometheus-community Helm repo
+      ansible.builtin.command:
+        cmd: helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+
+    - name: Update Helm repositories
+      ansible.builtin.command:
+        cmd: helm repo update
+
+    - name: Install kube-prometheus-stack Helm chart
+      ansible.builtin.command:
+        cmd: helm install monitoring prometheus-community/kube-prometheus-stack

@@ -1,28 +1,39 @@
-# Use Alpine Linux as the base image
-FROM alpine:latest
+# Stage 1: Build stage
+FROM python:3.9-alpine as builder
 
-# Install required packages
-RUN apk add --no-cache curl tar wget docker
+# Install dependencies
+RUN apk add --no-cache gcc musl-dev libffi-dev
+
+# Set the working directory
+WORKDIR /app
+
+# Copy the requirements file
+COPY requirements.txt .
+
+# Install dependencies to a directory within the builder stage
+RUN pip install --prefix=/install --no-cache-dir -r requirements.txt
+
+# Copy the application code
+COPY app.py .
+
+# Stage 2: Final stage
+FROM python:3.9-alpine
+
+# Set the working directory
+WORKDIR /app
+
+# Copy the dependencies from the build stage
+COPY --from=builder /install /usr/local
+
+# Copy the application code
+COPY app.py .
 
 # Set environment variables
-ENV KUBECTL_VERSION="v1.23.0"
+ENV FLASK_APP=app.py
+ENV FLASK_RUN_HOST=0.0.0.0
 
-# Download and install kubectl
-RUN curl -LO "https://storage.googleapis.com/kubernetes-release/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl" \
-    && chmod +x kubectl \
-    && mv kubectl /usr/local/bin/kubectl
+# Expose the port the app runs on
+EXPOSE 5000
 
-# Start Docker daemon
-CMD ["dockerd", "--host=unix:///var/run/docker.sock", "--host=tcp://0.0.0.0:2375"]
-
-# Wait for Docker daemon to start
-RUN sleep 5
-
-# Run commands to check Docker status and move kubectl
-RUN docker ps -a && ls -alrt /var/run/docker.sock 
-
-# Set the entrypoint to an indefinite command to keep the container running
-ENTRYPOINT ["tail", "-f", "/dev/null"]
-
-# Mount Docker socket from host
-VOLUME /var/run/docker.sock:/var/run/docker.sock
+# Command to run the application
+CMD ["flask", "run"]

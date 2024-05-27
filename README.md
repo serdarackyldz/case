@@ -46,3 +46,5 @@ Bu kodun containerize olabilmesi için multistage Dockerfile hazırlandı. Docke
 CI/CD ihtiyaçları için Jenkins deploymentı yapıldı. Jenkins için kullanılan ansible playbook'u da repository'ye eklenmiştir.
 
 Jenkins üzerinde çalışması planlanan pipeline için Jenkinsfile hazırlandı.
+
+https://github.com/serdarackyldz/case/blob/main/screenshots/Jenkins.png
